@@ -8,12 +8,13 @@ Public Class frm_biblioteca
         CurrentUserID()
         CarregarJogosComprados()
     End Sub
-    Private Sub CarregarJogosComprados()
+
+    Public Sub CarregarJogosComprados()
+
         Dim SQL As String = "SELECT g.Title, g.Image1, g.Price " &
                         "FROM Purchases p " &
                         "JOIN Games g ON p.GameID = g.GameID " &
                         "WHERE p.UserID = " & CurrentUserIDINT ' Substitua pelo ID do usuário logado
-
         Try
             ' Executa a consulta no banco de dados
             rs = db.Execute(SQL)
@@ -93,5 +94,6 @@ Public Class frm_biblioteca
         ' Aqui você pode implementar a lógica de download do jogo
         MsgBox("Iniciando download de: " & titulo)
     End Sub
+
 
 End Class

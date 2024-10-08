@@ -27,6 +27,7 @@ Partial Class Form1
         MenuStrip1 = New MenuStrip()
         LoginToolStripMenuItem = New ToolStripMenuItem()
         UsuToolStripMenuItem = New ToolStripMenuItem()
+        AdicionarFundoToolStripMenuItem = New ToolStripMenuItem()
         BibliotecaToolStripMenuItem = New ToolStripMenuItem()
         ComunidadeToolStripMenuItem = New ToolStripMenuItem()
         AmigosToolStripMenuItem = New ToolStripMenuItem()
@@ -35,7 +36,7 @@ Partial Class Form1
         AdminToolStripMenuItem = New ToolStripMenuItem()
         lbl_wallet = New Label()
         ContextMenuStrip1 = New ContextMenuStrip(components)
-        AdicionarFundoToolStripMenuItem = New ToolStripMenuItem()
+        ExcluirJogosToolStripMenuItem = New ToolStripMenuItem()
         MenuStrip1.SuspendLayout()
         SuspendLayout()
         ' 
@@ -61,6 +62,12 @@ Partial Class Form1
         UsuToolStripMenuItem.Name = "UsuToolStripMenuItem"
         UsuToolStripMenuItem.Size = New Size(51, 24)
         UsuToolStripMenuItem.Text = "Loja"
+        ' 
+        ' AdicionarFundoToolStripMenuItem
+        ' 
+        AdicionarFundoToolStripMenuItem.Name = "AdicionarFundoToolStripMenuItem"
+        AdicionarFundoToolStripMenuItem.Size = New Size(213, 26)
+        AdicionarFundoToolStripMenuItem.Text = "Adicionar Fundo $"
         ' 
         ' BibliotecaToolStripMenuItem
         ' 
@@ -101,6 +108,7 @@ Partial Class Form1
         ' 
         ' AdminToolStripMenuItem
         ' 
+        AdminToolStripMenuItem.DropDownItems.AddRange(New ToolStripItem() {ExcluirJogosToolStripMenuItem})
         AdminToolStripMenuItem.Enabled = False
         AdminToolStripMenuItem.ForeColor = Color.ForestGreen
         AdminToolStripMenuItem.Name = "AdminToolStripMenuItem"
@@ -122,11 +130,11 @@ Partial Class Form1
         ContextMenuStrip1.Name = "ContextMenuStrip1"
         ContextMenuStrip1.Size = New Size(61, 4)
         ' 
-        ' AdicionarFundoToolStripMenuItem
+        ' ExcluirJogosToolStripMenuItem
         ' 
-        AdicionarFundoToolStripMenuItem.Name = "AdicionarFundoToolStripMenuItem"
-        AdicionarFundoToolStripMenuItem.Size = New Size(224, 26)
-        AdicionarFundoToolStripMenuItem.Text = "Adicionar Fundo $"
+        ExcluirJogosToolStripMenuItem.Name = "ExcluirJogosToolStripMenuItem"
+        ExcluirJogosToolStripMenuItem.Size = New Size(224, 26)
+        ExcluirJogosToolStripMenuItem.Text = "Excluir Jogos"
         ' 
         ' Form1
         ' 
@@ -158,5 +166,6 @@ Partial Class Form1
     Friend WithEvents lbl_wallet As Label
     Friend WithEvents ContextMenuStrip1 As ContextMenuStrip
     Friend WithEvents AdicionarFundoToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents ExcluirJogosToolStripMenuItem As ToolStripMenuItem
 
 End Class

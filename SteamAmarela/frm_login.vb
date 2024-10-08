@@ -6,11 +6,12 @@
 
         ' Coleta os dados de login do formulário
         Dim username As String = txt_usuario.Text
+
         Dim password As String = txt_senha.Text
 
         ' Tenta fazer login
         If modLogin.Login(username, password) Then
-            MsgBox("Login bem-sucedido!", MsgBoxStyle.Information + MsgBoxStyle.OkOnly, "AVISO")
+
             ' Navega para a próxima tela, por exemplo:
             AbrirBiblioteca()
             Me.Hide()

@@ -8,8 +8,8 @@
 
     Sub carregarDgvAdmin()
         Try
-            ' SQL para selecionar todos os usuários
-            SQL = "SELECT Username, Email, Role FROM Users ORDER BY UserID ASC"
+            ' SQL para selecionar todos os usuários com a coluna Blocked
+            SQL = "SELECT Username, Email, Role, Blocked FROM Users ORDER BY UserID ASC"
             rs = db.Execute(SQL)
 
             ' Limpa o DataGridView antes de carregar novos dados
@@ -19,7 +19,7 @@
             If rs.EOF = False Then
                 ' Adiciona as linhas ao DataGridView
                 Do While Not rs.EOF
-                    dgvUsers.Rows.Add(rs.Fields("Username").Value, rs.Fields("Email").Value, rs.Fields("Role").Value)
+                    dgvUsers.Rows.Add(rs.Fields("Username").Value, rs.Fields("Email").Value, rs.Fields("Role").Value, rs.Fields("Blocked").Value)
                     rs.MoveNext()
                 Loop
             End If
@@ -28,6 +28,34 @@
             MsgBox("Erro ao carregar dados: " & ex.Message, MsgBoxStyle.Critical)
         End Try
     End Sub
+
+
+
+    Private Sub BlockUser(username As String, isBlocked As Boolean)
+        Try
+            ' Define a consulta SQL com base no estado de bloqueio atual
+            Dim newBlockedStatus As Integer = If(isBlocked, 0, 1) ' Alterna entre bloquear e desbloquear
+
+            ' SQL para atualizar o status de bloqueio do usuário
+            SQL = "UPDATE Users SET Blocked = " & newBlockedStatus & " WHERE Username = '" & username & "'"
+            db.Execute(SQL)
+
+            ' Exibe uma mensagem indicando se o usuário foi bloqueado ou desbloqueado
+            If newBlockedStatus = 1 Then
+                MsgBox("Usuário bloqueado com sucesso!", MsgBoxStyle.Information)
+            Else
+                MsgBox("Usuário desbloqueado com sucesso!", MsgBoxStyle.Information)
+            End If
+
+            ' Recarregar os dados no DataGridView após atualizar o bloqueio
+            carregarDgvAdmin()
+
+        Catch ex As Exception
+            ' Mensagem de erro em caso de falha
+            MsgBox("Erro ao atualizar o status de bloqueio do usuário: " & ex.Message, MsgBoxStyle.Critical)
+        End Try
+    End Sub
+
 
 
     Private Sub ConfigurarDataGridView()
@@ -39,10 +67,14 @@
         dgvUsers.Columns.Add("Email", "Email")
         dgvUsers.Columns.Add("Role", "Role")
 
+        ' Adiciona coluna para o status de bloqueio
+        dgvUsers.Columns.Add("Blocked", "Blocked")
+
         ' Definir largura das colunas
         dgvUsers.Columns("Username").Width = 150
         dgvUsers.Columns("Email").Width = 200
         dgvUsers.Columns("Role").Width = 100
+        dgvUsers.Columns("Blocked").Width = 80 ' Largura da coluna Blocked
 
         ' Adiciona coluna de botão Promote
         Dim btnPromote As New DataGridViewButtonColumn
@@ -75,7 +107,18 @@
         btnDelete.Text = "Delete"
         btnDelete.UseColumnTextForButtonValue = True
         dgvUsers.Columns.Add(btnDelete)
+
+        ' Adiciona coluna de botão BlockUser
+        Dim btnBlockUser As New DataGridViewButtonColumn
+        btnBlockUser.Name = "btnBlockUser"
+        btnBlockUser.HeaderText = "Block User"
+        btnBlockUser.Text = "Block"
+        btnBlockUser.UseColumnTextForButtonValue = True
+        dgvUsers.Columns.Add(btnBlockUser)
     End Sub
+
+
+
 
 
     Private Sub dgvUsers_CellContentClick(sender As Object, e As DataGridViewCellEventArgs) Handles dgvUsers.CellContentClick
@@ -87,7 +130,6 @@
             Select Case dgvUsers.Columns(e.ColumnIndex).Name
                 Case "Promote"
                     Dim role As String = dgvUsers.Rows(e.RowIndex).Cells("Role").Value.ToString()
-
                     ' Lógica de promoção
                     If role = "user" Then
                         AtualizarRole(e.RowIndex, "developer")
@@ -106,9 +148,17 @@
                 Case "Delete"
                     ' Lógica para excluir usuário
                     DeleteUser(selectedUsername)
+
+                Case "btnBlockUser"
+                    ' Pega o status de bloqueio atual do usuário
+                    Dim isBlocked As Boolean = Convert.ToBoolean(dgvUsers.Rows(e.RowIndex).Cells("Blocked").Value)
+                    Block1(selectedUsername)
+                    ' Chama a função para bloquear/desbloquear o usuário
+                    BlockUser(selectedUsername, isBlocked)
             End Select
         End If
     End Sub
+
 
     Private Sub PromoteUser(username As String)
         Try
@@ -169,4 +219,19 @@
             MsgBox("Erro ao promover usuário: " & ex.Message, MsgBoxStyle.Critical, "Erro")
         End Try
     End Sub
+
+
+    Private Sub Block1(username As String)
+        Try
+            SQL = "UPDATE Users SET Role = 'blocked' WHERE Username = '" & username & "'"
+            db.Execute(SQL)
+            MsgBox("Usuário bloqueado!!", MsgBoxStyle.Information)
+            carregarDgvAdmin() ' Recarrega os dados no DataGridView
+        Catch ex As Exception
+            MsgBox("Erro ao rebaixar usuário: " & ex.Message, MsgBoxStyle.Critical)
+        End Try
+    End Sub
+
+
+
 End Class

@@ -6,6 +6,7 @@
     Public IsDeveloper As Boolean = False
     Public IsUser As Boolean = False
     Public IsLoggedIn As Boolean = False ' Verifica se o usuário está logado
+    Public IsBlocked As Boolean = False
 
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Me.IsMdiContainer = True ' Define este formulário como o contêiner MDI
@@ -31,6 +32,20 @@
         End If
     End Sub
 
+    Public Sub VerificaBlock()
+        If IsBlocked Then
+            MsgBox("Este usuário está bloqueado e não pode fazer login.", MsgBoxStyle.Critical + MsgBoxStyle.OkOnly, "Usuário Bloqueado")
+
+            'desabilita as opções de admin no MenuStrip
+            AdminToolStripMenuItem.Enabled = False
+            DeveloperToolStripMenuItem.Enabled = False
+            CuradorToolStripMenuItem.Enabled = False
+            BibliotecaToolStripMenuItem.Enabled = False
+            ComunidadeToolStripMenuItem.Enabled = False
+            AmigosToolStripMenuItem.Enabled = False
+            Logout()
+        End If
+    End Sub
     Public Sub VerificaPermissaoCurador()
         If IsCurador Then
             ' Habilita as opções de admin no MenuStrip
@@ -69,8 +84,18 @@
 
     Private Sub BibliotecaToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles BibliotecaToolStripMenuItem.Click
         AbrirBiblioteca()
+        Dim bibliotecaForm As New frm_biblioteca
+
+        ' Chama a função CarregarJogosComprados
+        bibliotecaForm.CarregarJogosComprados()
+
+        ' Exibe o formulário
+        bibliotecaForm.MdiParent = Me ' Define o Form1 como MDI Parent, caso seja necessário
+        bibliotecaForm.Show()
+
     End Sub
     Private Sub AbrirBiblioteca()
+
         ' Verifica se a biblioteca já está aberta
         For Each form As Form In Me.MdiChildren
             If TypeOf form Is frm_biblioteca Then
@@ -245,5 +270,11 @@
     Private Sub AdicionarFundoToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles AdicionarFundoToolStripMenuItem.Click
         Dim frm As New frmAdicionarFundo
         frm.ShowDialog() ' Mostra o formulário modal
+    End Sub
+
+    Private Sub ExcluirJogosToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ExcluirJogosToolStripMenuItem.Click
+        Dim frmExcluir As New frmExcluirJogo
+        frmExcluir.MdiParent = Me
+        frmExcluir.Show()
     End Sub
 End Class

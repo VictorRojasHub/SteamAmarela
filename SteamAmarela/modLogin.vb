@@ -6,6 +6,7 @@
     Public cont As Integer
     Public CurrentDeveloperID As Integer
     Public CurrentUserIDINT As Integer
+    Public isBlocked As Boolean
 
 
     ' Sub para conexão com o banco de dados
@@ -14,7 +15,6 @@
             ' Cria a conexão ADO com o SQL Server
             db = CreateObject("ADODB.Connection")
             db.Open("Provider=SQLOLEDB;Data Source=localhost\SQLEXPRESS01;Initial Catalog=steamAmarelaDB;trusted_connection=yes;")
-            MsgBox("Conexão ok", MsgBoxStyle.Information + MsgBoxStyle.OkOnly, "AVISO")
         Catch ex As Exception
             MsgBox("Erro ao conectar: " & ex.Message, MsgBoxStyle.Critical + MsgBoxStyle.OkOnly, "AVISO")
         End Try
@@ -29,20 +29,27 @@
                 ' Armazena o UserID na variável global
                 CurrentUserIDINT = Convert.ToInt32(rs.Fields("UserID").Value)
             Else
-                MsgBox("Erro: Usuário não encontrado.", MsgBoxStyle.Critical)
+
             End If
         Catch ex As Exception
-            MsgBox("Erro ao definir UserID: " & ex.Message, MsgBoxStyle.Critical)
+
         End Try
     End Sub
 
 
 
     Sub AbrirBiblioteca()
+        ' Verifica se o usuário está bloqueado antes de abrir a biblioteca
+        If isBlocked = True Then
+            MsgBox("Usuário bloqueado não pode acessar a biblioteca.", MsgBoxStyle.Critical + MsgBoxStyle.OkOnly, "Acesso Negado")
+            Exit Sub
+        End If
+
         Dim frm_biblioteca As New frm_biblioteca()
         frm_biblioteca.MdiParent = Form1 ' Define Frm_Principal como pai MDI
         frm_biblioteca.Show() ' Abre o formulário dentro do formulário principal
     End Sub
+
 
     Sub AbrirLoja()
         Dim loja As New loja()
@@ -89,51 +96,65 @@
     ' Função para Login
     Public Function Login(username As String, password As String) As Boolean
         Try
-            ' SQL para verificar o usuário e senha no banco
+            ' SQL para verificar o usuário, senha e se está bloqueado no banco
             SQL = "SELECT * FROM Users WHERE Username = '" & username & "' AND PasswordHash = '" & HashPassword(password) & "'"
             rs = db.Execute(SQL)
 
             ' Verifica se encontrou o usuário
             If Not rs.EOF Then
-                If rs.Fields("role").Value = "admin" Then
-                    Form1.IsAdmin = True ' Define que o usuário é admin
-                ElseIf rs.Fields("role").Value = "curador" Then
-                    Form1.IsCurador = True
-                ElseIf rs.Fields("role").Value = "developer" Then
-                    Form1.IsDeveloper = True
-                ElseIf rs.Fields("role").Value = "user" Then
-                    Form1.IsUser = True
-                Else
-                    Form1.IsAdmin = False
-                    Form1.IsCurador = False
-                    Form1.IsDeveloper = False
-                    Form1.IsUser = False
+                ' Verifica se o campo 'Blocked' existe e se o valor é 1 (usuário bloqueado)
+                If rs.Fields("Blocked").Value = 1 Then
+                    MsgBox("Este usuário está bloqueado e não pode fazer login.", MsgBoxStyle.Critical + MsgBoxStyle.OkOnly, "Usuário Bloqueado")
+                    Return False ' Falha no login devido ao bloqueio
                 End If
 
+                ' Verifica a role do usuário e define as permissões
+                Select Case rs.Fields("role").Value.ToString().ToLower()
+                    Case "admin"
+                        Form1.IsAdmin = True
+                    Case "curador"
+                        Form1.IsCurador = True
+                    Case "developer"
+                        Form1.IsDeveloper = True
+                        CurrentDeveloperID = rs.Fields("UserID").Value ' Captura o ID do desenvolvedor
+                    Case "user"
+                        Form1.IsUser = True
 
-                If rs.Fields("role").Value = "developer" Then
-                    CurrentDeveloperID = rs.Fields("UserID").Value ' Captura o ID do desenvolvedor logado
-                    Return True ' Login bem-sucedido
-                End If
+                    Case "Blocked"
+                        Form1.IsUser = False
+                        MsgBox("Este usuário está bloqueado e não pode fazer login.", MsgBoxStyle.Critical + MsgBoxStyle.OkOnly, "Usuário Bloqueado")
 
+                    Case Else
+                        ' Reseta as permissões caso o papel seja desconhecido
+                        Form1.IsAdmin = False
+                        Form1.IsCurador = False
+                        Form1.IsDeveloper = False
+                        Form1.IsUser = False
+                        MsgBox("Este usuário está bloqueado e não pode fazer login.", MsgBoxStyle.Critical + MsgBoxStyle.OkOnly, "Usuário Bloqueado")
+
+                End Select
+
+                ' Atualiza o saldo da carteira no formulário
                 Dim walletValue As Decimal = rs.Fields("wallet").Value
                 Form1.lbl_wallet.Text = "Saldo: R$ " & walletValue.ToString("F2")
 
-
-                Return True ' Login bem-sucedido
+                ' Login bem-sucedido
+                Return True
 
             Else
                 MsgBox("Usuário ou senha incorretos", MsgBoxStyle.Critical + MsgBoxStyle.OkOnly, "AVISO")
-                Return False ' Falha no login
+                Return False ' Falha no login por credenciais inválidas
             End If
 
         Catch ex As Exception
             MsgBox("Erro ao tentar fazer login: " & ex.Message, MsgBoxStyle.Critical + MsgBoxStyle.OkOnly, "AVISO")
             Return False
         End Try
-
-
     End Function
+
+
+
+
 
     ' Função para Cadastro
     Public Function Register(username As String, password As String, email As String) As Boolean
@@ -225,6 +246,11 @@
 
         Return 0 ' Retorna 0 se não encontrar o saldo
     End Function
+
+
+
+
+
 
 
 
